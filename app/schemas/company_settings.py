@@ -1,0 +1,24 @@
+from typing import Optional
+from pydantic import BaseModel
+
+class CompanySettingsBase(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    trn: Optional[str] = None
+    bank_details: Optional[str] = None
+    logo_url: Optional[str] = None
+
+class CompanySettingsCreate(CompanySettingsBase):
+    pass
+
+class CompanySettingsUpdate(CompanySettingsBase):
+    pass
+
+class CompanySettings(CompanySettingsBase):
+    id: int
+
+    class Config:
+        from_attributes = True
