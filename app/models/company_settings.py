@@ -11,3 +11,6 @@ class CompanySettings(Base):
     trn = Column(String(50), nullable=True)
     bank_details = Column(Text, nullable=True)
     logo_url = Column(String(500), nullable=True)
+    full_logo_url = Column(String(500), nullable=True)
+    primary_color = Column(String(50), nullable=True)
+    secondary_color = Column(String(50), nullable=True)

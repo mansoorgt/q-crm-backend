@@ -86,3 +86,33 @@ async def upload_company_logo(
     db.commit()
     db.refresh(settings)
     return settings
+
+@router.post("/full-logo", response_model=CompanySettingsSchema)
+async def upload_company_full_logo(
+    *,
+    db: Session = Depends(deps.get_db),
+    file: UploadFile = File(...),
+    current_user = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Upload full company logo text. Only superusers.
+    """
+    settings = db.query(CompanySettings).first()
+    if not settings:
+        settings = CompanySettings()
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+
+    file_location = f"{UPLOAD_DIR}/full_{file.filename}"
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+    
+    # Store the relative path
+    full_logo_url = f"/static/full_{file.filename}"
+    
+    settings.full_logo_url = full_logo_url
+    db.add(settings)
+    db.commit()
+    db.refresh(settings)
+    return settings

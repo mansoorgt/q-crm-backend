@@ -10,6 +10,9 @@ class CompanySettingsBase(BaseModel):
     trn: Optional[str] = None
     bank_details: Optional[str] = None
     logo_url: Optional[str] = None
+    full_logo_url: Optional[str] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
 
 class CompanySettingsCreate(CompanySettingsBase):
     pass

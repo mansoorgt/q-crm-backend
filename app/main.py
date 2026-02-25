@@ -19,8 +19,6 @@ origins = [
 
 from fastapi.staticfiles import StaticFiles
 
-# ...
-
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
 

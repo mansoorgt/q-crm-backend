@@ -14,6 +14,7 @@ class ProductBase(BaseModel):
     name: Optional[str] = None
     sku: Optional[str] = None
     price: Optional[float] = None
+    quantity: Optional[float] = 0.0
     tax: Optional[float] = 0.0
     description: Optional[str] = None
     status_id: Optional[int] = None

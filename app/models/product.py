@@ -22,6 +22,7 @@ class Product(Base):
     name = Column(String(255), index=True, nullable=False)
     sku = Column(String(255), unique=True, index=True, nullable=False)
     price = Column(Float, nullable=False)
+    quantity = Column(Float, default=0.0)
     tax = Column(Float, default=0.0)
     description = Column(Text, nullable=True)
     
