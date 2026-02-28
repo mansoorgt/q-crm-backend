@@ -4,3 +4,6 @@ from .inquiry import Inquiry
 from .product import Product
 from .customer import Customer
 from .supplier import Supplier
+from .permission import Permission
+from .role import Role
+from .role_permission import RolePermission
