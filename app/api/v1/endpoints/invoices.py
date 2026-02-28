@@ -19,6 +19,21 @@ def read_invoices(
     count = crud_invoice.invoice.count_invoices(db, search=search)
     return {"items": invoices, "total": count}
 
+@router.post("/", response_model=Invoice)
+def create_invoice(
+    *,
+    db: Session = Depends(deps.get_db),
+    invoice_in: InvoiceCreate,
+) -> Any:
+    """
+    Create new invoice.
+    """
+    if invoice_in.invoice_number == "LOADING..." or not invoice_in.invoice_number:
+        invoice_in.invoice_number = crud_invoice.invoice.get_next_invoice_number(db)
+        
+    invoice = crud_invoice.invoice.create_with_items(db=db, obj_in=invoice_in)
+    return invoice
+
 @router.post("/from-quotation/{quotation_id}", response_model=Invoice)
 def create_invoice_from_quotation(
     *,

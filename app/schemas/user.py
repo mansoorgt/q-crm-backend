@@ -12,6 +12,7 @@ class UserBase(BaseModel):
     phone_number: Optional[str] = None
     address: Optional[str] = None
     position_id: Optional[int] = None
+    role_id: Optional[int] = None
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -30,8 +31,11 @@ class UserInDBBase(UserBase):
 
 # Additional properties to return via API
 from .position import Position
+from .role import Role
+
 class User(UserInDBBase):
     position: Optional[Position] = None
+    role: Optional[Role] = None
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):

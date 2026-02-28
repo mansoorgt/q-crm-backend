@@ -91,6 +91,23 @@ def update_quotation(db: Session, quotation_id: int, quotation_update: Quotation
     
     db.commit()
     db.refresh(db_quotation)
+    
+    # Sync status to Inquiry if applicable
+    if "status" in update_data and db_quotation.inquiry_reference:
+        try:
+            inquiry_id = int(db_quotation.inquiry_reference)
+            from app.models.inquiry import Inquiry
+            from app.models.quotation import QuotationStatus
+            db_inquiry = db.query(Inquiry).filter(Inquiry.id == inquiry_id).first()
+            if db_inquiry:
+                if db_quotation.status == QuotationStatus.APPROVED:
+                    db_inquiry.status = "Won"
+                elif db_quotation.status == QuotationStatus.REJECTED:
+                    db_inquiry.status = "Lost"
+                db.commit()
+        except ValueError:
+            pass # inquiry_reference is not an ID, ignore
+
     return db_quotation
 
 def delete_quotation(db: Session, quotation_id: int):

@@ -12,13 +12,14 @@ def read_inquiries(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
+    search: str = "",
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve inquiries.
     """
-    total = db.query(models.Inquiry).count()
-    inquiries = crud.inquiry.get_multi(db, skip=skip, limit=limit)
+    total = crud.inquiry.count(db, search=search)
+    inquiries = crud.inquiry.get_multi(db, skip=skip, limit=limit, search=search)
     return {"items": inquiries, "total": total}
 
 @router.get("/{id}", response_model=schemas.inquiry.Inquiry)

@@ -56,3 +56,24 @@ def get_current_active_superuser(
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+def check_permission(required_permission: str):
+    def permission_checker(
+        current_user: models.User = Depends(get_current_active_user),
+    ) -> models.User:
+        if current_user.is_superuser:
+            return current_user
+        if not current_user.role:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Not enough privileges. Requires: {required_permission}",
+            )
+        
+        has_permission = any(p.name == required_permission for p in current_user.role.permissions)
+        if not has_permission:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Not enough privileges. Requires: {required_permission}",
+            )
+        return current_user
+    return permission_checker

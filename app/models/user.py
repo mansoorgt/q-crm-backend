@@ -15,5 +15,7 @@ class User(Base):
     phone_number = Column(String(255), index=True, nullable=True)
     address = Column(String(255), nullable=True)
     position_id = Column(Integer, ForeignKey("position.id"), nullable=True)
+    role_id = Column(Integer, ForeignKey("role.id"), nullable=True)
     
     position = relationship("Position")
+    role = relationship("Role", back_populates="users")

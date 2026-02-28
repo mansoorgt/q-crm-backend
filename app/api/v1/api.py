@@ -3,12 +3,14 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     login, users, positions, products, customers, 
     inquiries, quotations, company_settings, invoices,
-    suppliers, purchase_entries
+    suppliers, purchase_entries, roles, permissions
 )
 
 api_router = APIRouter()
 api_router.include_router(login.router, tags=["login"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
+api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
+api_router.include_router(permissions.router, prefix="/permissions", tags=["permissions"])
 api_router.include_router(positions.router, prefix="/positions", tags=["positions"])
 api_router.include_router(products.router, prefix="/products", tags=["products"])
 api_router.include_router(customers.router, prefix="/customers", tags=["customers"])

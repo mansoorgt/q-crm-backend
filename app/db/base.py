@@ -3,6 +3,9 @@
 from app.db.base_class import Base  # noqa
 from app.models.user import User  # noqa
 from app.models.position import Position  # noqa
+from app.models.permission import Permission  # noqa
+from app.models.role import Role  # noqa
+from app.models.role_permission import role_permission  # noqa
 from app.models.product import Product, Category, ProductStatus  # noqa
 from app.models.customer import Customer, ContactPerson  # noqa
 from app.models.inquiry import Inquiry  # noqa
