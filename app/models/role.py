@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
-
+from app.models.role_permission import role_permission
 from app.db.base_class import Base
 
 class Role(Base):
@@ -9,4 +9,4 @@ class Role(Base):
     description = Column(String(255), nullable=True)
     
     users = relationship("User", back_populates="role")
-    permissions = relationship("Permission", secondary="role_permission", back_populates="roles")
+    permissions = relationship("Permission", secondary=role_permission, back_populates="roles")
