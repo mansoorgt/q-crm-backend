@@ -57,7 +57,7 @@ class QuotationBase(BaseModel):
     tax_amount: float
     grand_total: float
     
-    terms_conditions: Optional[str] = None
+    #terms_conditions: Optional[str] = None
     internal_notes: Optional[str] = None
 
 class QuotationCreate(QuotationBase):
@@ -80,7 +80,7 @@ class QuotationUpdate(BaseModel): # Allowing partial updates
     tax_amount: Optional[float] = None
     grand_total: Optional[float] = None
     
-    terms_conditions: Optional[str] = None
+    #terms_conditions: Optional[str] = None
     internal_notes: Optional[str] = None
     
     line_items: Optional[List[QuotationItemCreate]] = None

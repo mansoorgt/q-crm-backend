@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, model_validator
 
 # Contact Person Schemas
 class ContactPersonBase(BaseModel):
@@ -25,9 +25,11 @@ class ContactPerson(ContactPersonBase):
 class CustomerBase(BaseModel):
     name: str
     type: str # 'individual' or 'company'
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
+
+    
 
 class CustomerCreate(CustomerBase):
     contact_persons: Optional[List[ContactPersonCreate]] = []

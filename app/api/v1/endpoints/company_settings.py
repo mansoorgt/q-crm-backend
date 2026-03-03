@@ -34,7 +34,7 @@ def update_company_settings(
     *,
     db: Session = Depends(deps.get_db),
     settings_in: CompanySettingsUpdate,
-    current_user = Depends(deps.get_current_active_superuser),
+    current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update company settings. Only superusers.

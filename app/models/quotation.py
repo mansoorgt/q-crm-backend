@@ -30,7 +30,7 @@ class Quotation(Base):
     tax_amount = Column(Float, default=0.0)
     grand_total = Column(Float, default=0.0)
     
-    terms_conditions = Column(Text, nullable=True)
+    # terms_conditions = Column(Text, nullable=True)
     internal_notes = Column(Text, nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
