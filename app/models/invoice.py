@@ -32,7 +32,7 @@ class Invoice(Base):
     balance_due = Column(Float, default=0.0)
     
     notes = Column(Text, nullable=True)
-    terms_conditions = Column(Text, nullable=True)
+    # terms_conditions = Column(Text, nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -14,4 +14,5 @@ class CompanySettings(Base):
     full_logo_url = Column(String(500), nullable=True)
     primary_color = Column(String(50), nullable=True)
     secondary_color = Column(String(50), nullable=True)
-    terms_conditions = Column(Text, nullable=True)
+    quotation_terms_conditions = Column(Text, nullable=True)
+    invoice_terms_conditions = Column(Text, nullable=True)

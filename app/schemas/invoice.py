@@ -45,7 +45,7 @@ class InvoiceBase(BaseModel):
     balance_due: float = 0.0
     
     notes: Optional[str] = None
-    terms_conditions: Optional[str] = None
+    # terms_conditions: Optional[str] = None
 
 class InvoiceCreate(InvoiceBase):
     line_items: List[InvoiceItemCreate]
@@ -65,7 +65,7 @@ class InvoiceUpdate(BaseModel):
     balance_due: Optional[float] = None
     
     notes: Optional[str] = None
-    terms_conditions: Optional[str] = None
+    # terms_conditions: Optional[str] = None
     
     line_items: Optional[List[InvoiceItemCreate]] = None
 

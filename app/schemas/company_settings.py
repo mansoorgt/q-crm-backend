@@ -13,7 +13,8 @@ class CompanySettingsBase(BaseModel):
     full_logo_url: Optional[str] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
-    terms_conditions: Optional[str] = None
+    quotation_terms_conditions: Optional[str] = None
+    invoice_terms_conditions: Optional[str] = None
 
 class CompanySettingsCreate(CompanySettingsBase):
     pass
