@@ -11,6 +11,7 @@ class PurchaseEntry(Base):
     
     supplier_id = Column(Integer, ForeignKey("supplier.id"), nullable=False)
     created_by_id = Column(Integer, ForeignKey("user.id"), nullable=True)
+    invoice_id = Column(Integer, ForeignKey("invoice.id"), nullable=True)
     
     subtotal = Column(Float, default=0.0)
     grand_total = Column(Float, default=0.0)
@@ -21,7 +22,9 @@ class PurchaseEntry(Base):
     # Relationships
     supplier = relationship("Supplier", backref="purchase_entries")
     created_by = relationship("User", backref="purchase_entries")
+    invoice = relationship("Invoice")
     line_items = relationship("PurchaseEntryItem", back_populates="purchase_entry", cascade="all, delete-orphan")
+    attachments = relationship("PurchaseEntryAttachment", back_populates="purchase_entry", cascade="all, delete-orphan")
 
 
 class PurchaseEntryItem(Base):
@@ -36,3 +39,12 @@ class PurchaseEntryItem(Base):
     
     purchase_entry = relationship("PurchaseEntry", back_populates="line_items")
     product = relationship("Product")
+
+class PurchaseEntryAttachment(Base):
+    id = Column(Integer, primary_key=True, index=True)
+    purchase_entry_id = Column(Integer, ForeignKey("purchaseentry.id", ondelete="CASCADE"), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_url = Column(String(500), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    purchase_entry = relationship("PurchaseEntry", back_populates="attachments")

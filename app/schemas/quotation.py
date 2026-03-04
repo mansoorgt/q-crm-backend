@@ -18,6 +18,7 @@ class ProductSimple(BaseModel):
 class QuotationItemBase(BaseModel):
     product_id: Optional[int] = None
     description: str
+    stock_availability: Optional[str] = None
     quantity: float = 1.0
     unit_price: float = 0.0
     tax_rate: float = 0.0
@@ -54,6 +55,7 @@ class QuotationBase(BaseModel):
     subtotal: float
     discount_amount: float
     shipping_amount: float
+    bank_charges: float = 0.0
     tax_amount: float
     grand_total: float
     
@@ -77,6 +79,7 @@ class QuotationUpdate(BaseModel): # Allowing partial updates
     subtotal: Optional[float] = None
     discount_amount: Optional[float] = None
     shipping_amount: Optional[float] = None
+    bank_charges: Optional[float] = None
     tax_amount: Optional[float] = None
     grand_total: Optional[float] = None
     

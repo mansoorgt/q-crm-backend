@@ -4,6 +4,23 @@ from datetime import datetime
 from .supplier import Supplier
 from .product import Product
 
+class InvoiceSimple(BaseModel):
+    id: int
+    invoice_number: str
+
+    class Config:
+        from_attributes = True
+
+class PurchaseEntryAttachmentBase(BaseModel):
+    id: int
+    purchase_entry_id: int
+    file_name: str
+    file_url: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class PurchaseEntryItemBase(BaseModel):
     product_id: Optional[int] = None
     quantity: float
@@ -30,6 +47,7 @@ class PurchaseEntryBase(BaseModel):
     subtotal: float = 0.0
     grand_total: float = 0.0
     created_by_id: Optional[int] = None
+    invoice_id: Optional[int] = None
 
 class PurchaseEntryCreate(PurchaseEntryBase):
     line_items: List[PurchaseEntryItemCreate]
@@ -47,6 +65,8 @@ class PurchaseEntry(PurchaseEntryBase):
     
     # Nested objects
     supplier: Optional[Supplier] = None
+    invoice: Optional[InvoiceSimple] = None
+    attachments: List[PurchaseEntryAttachmentBase] = []
 
     class Config:
         from_attributes = True

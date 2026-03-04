@@ -81,6 +81,7 @@ def update_quotation(db: Session, quotation_id: int, quotation_update: Quotation
                 quantity=item.get("quantity"),
                 unit_price=item.get("unit_price"),
                 tax_rate=item.get("tax_rate"),
+                stock_availability=item.get("stock_availability"), 
                 total=item.get("total", 0.0) # Ensure total is passed or calculated
             )
              db.add(db_item)

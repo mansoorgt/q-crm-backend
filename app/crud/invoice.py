@@ -24,7 +24,42 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
+    def update(
+        self,
+        db: Session,
+        *,
+        db_obj: Invoice,
+        obj_in: InvoiceUpdate
+    ) -> Invoice:
+        update_data = obj_in.dict(exclude_unset=True)
+        
+        # Handle line items separately
+        if "line_items" in update_data:
+            # Delete existing
+            db.query(InvoiceItem).filter(InvoiceItem.invoice_id == db_obj.id).delete()
+            # Add new
+            line_items = update_data.pop("line_items")
+            for item in line_items:
+                 db_item = InvoiceItem(
+                    invoice_id=db_obj.id,
+                    product_id=item.get("product_id"),
+                    description=item.get("description"),
+                    quantity=item.get("quantity"),
+                    unit_price=item.get("unit_price"),
+                    tax_rate=item.get("tax_rate"),
+                    stock_availability=item.get("stock_availability"), 
+                    total=item.get("total", 0.0) # Ensure total is passed or calculated
+                )
+                 db.add(db_item)
 
+        # Update other fields using CRUDBase update logic
+        for field in update_data:
+            setattr(db_obj, field, update_data[field])
+
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
     def get_invoices(self, db: Session, *, skip: int = 0, limit: int = 100, search: str = "") -> List[Invoice]:
         query = db.query(Invoice)
         if search:
@@ -69,11 +104,11 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
             subtotal=quotation.subtotal,
             discount_amount=quotation.discount_amount,
             shipping_amount=quotation.shipping_amount,
+            bank_charges=quotation.bank_charges,
             tax_amount=quotation.tax_amount,
             grand_total=quotation.grand_total,
             balance_due=quotation.grand_total,
-            notes=quotation.internal_notes,
-            terms_conditions=quotation.terms_conditions
+            notes=quotation.internal_notes
         )
         
         db.add(invoice)
@@ -87,7 +122,8 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
                 quantity=q_item.quantity,
                 unit_price=q_item.unit_price,
                 tax_rate=q_item.tax_rate,
-                total=q_item.total
+                total=q_item.total,
+                stock_availability=q_item.stock_availability,
             )
             db.add(inv_item)
             

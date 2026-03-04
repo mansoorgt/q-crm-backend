@@ -9,6 +9,7 @@ from app.schemas.quotation import ProductSimple
 class InvoiceItemBase(BaseModel):
     product_id: Optional[int] = None
     description: str
+    stock_availability: Optional[str] = None
     quantity: float = 1.0
     unit_price: float = 0.0
     tax_rate: float = 0.0
@@ -38,6 +39,7 @@ class InvoiceBase(BaseModel):
     subtotal: float
     discount_amount: float
     shipping_amount: float
+    bank_charges: float = 0.0
     tax_amount: float
     grand_total: float
     
@@ -58,6 +60,7 @@ class InvoiceUpdate(BaseModel):
     subtotal: Optional[float] = None
     discount_amount: Optional[float] = None
     shipping_amount: Optional[float] = None
+    bank_charges: Optional[float] = None
     tax_amount: Optional[float] = None
     grand_total: Optional[float] = None
     

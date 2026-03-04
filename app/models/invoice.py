@@ -25,6 +25,7 @@ class Invoice(Base):
     subtotal = Column(Float, default=0.0)
     discount_amount = Column(Float, default=0.0)
     shipping_amount = Column(Float, default=0.0)
+    bank_charges = Column(Float, default=0.0)
     tax_amount = Column(Float, default=0.0)
     grand_total = Column(Float, default=0.0)
     
@@ -49,6 +50,7 @@ class InvoiceItem(Base):
     product_id = Column(Integer, ForeignKey("product.id"), nullable=True)
     
     description = Column(Text, nullable=False)
+    stock_availability = Column(String(50), nullable=True)
     quantity = Column(Float, default=1.0)
     unit_price = Column(Float, default=0.0)
     tax_rate = Column(Float, default=0.0)
