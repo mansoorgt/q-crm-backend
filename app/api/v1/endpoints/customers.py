@@ -27,6 +27,22 @@ def read_customers(
         
     return {"items": customers, "total": total}
 
+@router.get("/{id}", response_model=schemas.customer.Customer)
+def read_customer(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get customer by ID.
+    """
+    customer = crud.customer.get(db=db, id=id)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return customer
+
+
 @router.post("/", response_model=schemas.customer.Customer)
 def create_customer(
     *,

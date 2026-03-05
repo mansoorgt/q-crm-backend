@@ -12,7 +12,7 @@ class ContactPersonCreate(ContactPersonBase):
     pass
 
 class ContactPersonUpdate(ContactPersonBase):
-    pass
+    id: Optional[int] = None
 
 class ContactPerson(ContactPersonBase):
     id: int
@@ -35,7 +35,7 @@ class CustomerCreate(CustomerBase):
     contact_persons: Optional[List[ContactPersonCreate]] = []
 
 class CustomerUpdate(CustomerBase):
-    contact_persons: Optional[List[ContactPersonCreate]] = []
+    contact_persons: Optional[List[ContactPersonUpdate]] = []
 
 class Customer(CustomerBase):
     id: int

@@ -48,36 +48,47 @@ class CRUDCustomer(CRUDBase[Customer, CustomerCreate, CustomerUpdate]):
         
         # Handle Contact Persons if provided
         if contact_persons_data is not None:
-             # Basic strategy: Delete all existing and re-create (simplest for now)
-             # Or smarter: update existing, delete missing, create new.
-             # For MVP, let's keep it simple: clear and re-add or just add new ones? 
-             # The user requirement implies managing them.
+            existing_cps = db.query(ContactPerson).filter(ContactPerson.customer_id == db_obj.id).all()
+            existing_cp_map = {cp.id: cp for cp in existing_cps}
              
-             # Let's try to match by ID if possible, but the schema assumes just data.
-             # If we want full sync, we might need a more complex update.
-             # For now, let's assume we preserve existing ones and adding/updating is handled separately or
-             # we wipe and replace? Wiping and replacing is destructive if IDs change.
-             # Let's assume the update payload expects the full list of desired state?
-             # If we receive contact_persons, we should probably align with that list.
+            updated_cp_ids = set()
              
-             # Deleting all existing for this customer
-            db.query(ContactPerson).filter(ContactPerson.customer_id == db_obj.id).delete()
-            
             for cp_data in contact_persons_data:
-                 # cp_data might have 'id' but we just re-create for simplicity in this MVP approach 
-                 # unless we strictly need to keep IDs.
-                 # Filter out 'id' if present in dict to avoid collision or error if we treat as new
-                 if isinstance(cp_data, dict):
-                    cp_data.pop('id', None)
-                 else:
-                    # pydantic model
-                    cp_data = cp_data.dict(exclude={'id'})
+                if not isinstance(cp_data, dict):
+                    cp_data = cp_data.dict(exclude_unset=True)
+                     
+                cp_id = cp_data.get('id')
                  
-                 contact_person = ContactPerson(**cp_data, customer_id=db_obj.id)
-                 db.add(contact_person)
-            
-            db.commit()
-            db.refresh(db_obj)
+                if cp_id and cp_id in existing_cp_map:
+                    # Update existing
+                    existing_cp = existing_cp_map[cp_id]
+                    for k, v in cp_data.items():
+                        if k != 'id' and hasattr(existing_cp, k):
+                            setattr(existing_cp, k, v)
+                    updated_cp_ids.add(cp_id)
+                else:
+                    # Create new
+                    cp_data.pop('id', None)
+                    db.add(ContactPerson(**cp_data, customer_id=db_obj.id))
+                     
+            # Delete missing ones
+            for cp_id, cp in existing_cp_map.items():
+                if cp_id not in updated_cp_ids:
+                    db.delete(cp)
+                     
+            try:
+                db.commit()
+                db.refresh(db_obj)
+            except Exception as e:
+                db.rollback()
+                from sqlalchemy.exc import IntegrityError
+                if isinstance(e, IntegrityError):
+                    from fastapi import HTTPException
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"Cannot delete contact person because it is referenced elsewhere."
+                    )
+                raise e
 
         return db_obj
 
