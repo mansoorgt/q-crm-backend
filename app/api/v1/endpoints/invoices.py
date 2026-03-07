@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.crud import invoice as crud_invoice
-from app.schemas.invoice import Invoice, InvoiceCreate, InvoiceUpdate, InvoicePagination
+from app.schemas.invoice import Invoice, InvoiceCreate, InvoiceUpdate, InvoicePagination, InvoicePayment, InvoicePaymentCreate
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ def create_invoice(
     """
     Create new invoice.
     """
-    if invoice_in.invoice_number == "LOADING..." or not invoice_in.invoice_number:
+    if invoice_in.invoice_number in ["LOADING...", "Will be generated"] or not invoice_in.invoice_number:
         invoice_in.invoice_number = crud_invoice.invoice.get_next_invoice_number(db)
         
     invoice = crud_invoice.invoice.create_with_items(db=db, obj_in=invoice_in)
@@ -44,7 +44,14 @@ def create_invoice_from_quotation(
         invoice = crud_invoice.invoice.create_from_quotation(db=db, quotation_id=quotation_id)
         return invoice
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        error_msg = str(e)
+        if error_msg.startswith("Invoice already exists for this quotation:"):
+            existing_id = int(error_msg.split(":")[1])
+            raise HTTPException(
+                status_code=400, 
+                detail={"message": "Invoice already exists for this quotation", "invoice_id": existing_id}
+            )
+        raise HTTPException(status_code=404, detail=error_msg)
 
 @router.get("/{id}", response_model=Invoice)
 def read_invoice(
@@ -69,3 +76,29 @@ def update_invoice(
         raise HTTPException(status_code=404, detail="Invoice not found")
     invoice = crud_invoice.invoice.update(db=db, db_obj=invoice, obj_in=invoice_in)
     return invoice
+
+@router.post("/{id}/payments", response_model=InvoicePayment)
+def add_payment(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    payment_in: InvoicePaymentCreate,
+) -> Any:
+    try:
+        payment = crud_invoice.invoice.add_payment(db=db, invoice_id=id, payment_in=payment_in)
+        return payment
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.delete("/{id}/payments/{payment_id}")
+def delete_payment(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    payment_id: int,
+) -> Any:
+    try:
+        success = crud_invoice.invoice.delete_payment(db=db, invoice_id=id, payment_id=payment_id)
+        return {"success": success}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

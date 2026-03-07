@@ -26,6 +26,25 @@ class InvoiceItem(InvoiceItemBase):
     class Config:
         from_attributes = True
 
+# --- Payment Schemas ---
+class InvoicePaymentBase(BaseModel):
+    amount: float
+    payment_method: Optional[str] = None
+    reference_number: Optional[str] = None
+    notes: Optional[str] = None
+
+class InvoicePaymentCreate(InvoicePaymentBase):
+    pass
+
+class InvoicePayment(InvoicePaymentBase):
+    id: int
+    invoice_id: int
+    payment_date: datetime
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 # --- Invoice Schemas ---
 class InvoiceBase(BaseModel):
     invoice_number: str
@@ -56,6 +75,7 @@ class InvoiceUpdate(BaseModel):
     invoice_date: Optional[datetime] = None
     due_date: Optional[datetime] = None
     status: Optional[InvoiceStatus] = None
+    quotation_id: Optional[int] = None
     
     subtotal: Optional[float] = None
     discount_amount: Optional[float] = None
@@ -77,6 +97,7 @@ class Invoice(InvoiceBase):
     created_at: datetime
     updated_at: datetime
     line_items: List[InvoiceItem] = []
+    payments: List[InvoicePayment] = []
     customer: Optional[Customer] = None
 
     class Config:

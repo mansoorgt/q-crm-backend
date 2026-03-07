@@ -14,6 +14,8 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
         line_items_data = obj_in_data.pop("line_items", [])
         
         db_obj = Invoice(**obj_in_data)
+        if "balance_due" not in obj_in_data or obj_in_data["balance_due"] == 0:
+            db_obj.balance_due = db_obj.grand_total
         db.add(db_obj)
         db.flush() # Get ID
         
@@ -56,6 +58,8 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
         for field in update_data:
             setattr(db_obj, field, update_data[field])
 
+        db_obj.balance_due = db_obj.grand_total - db_obj.amount_paid
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -89,9 +93,10 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
         if not quotation:
             raise ValueError("Quotation not found")
             
-        # Optional: Check if invoice already exists for this quotation
-        # existing = db.query(Invoice).filter(Invoice.quotation_id == quotation_id).first()
-        # if existing: return existing
+        # Check if invoice already exists for this quotation
+        existing = db.query(Invoice).filter(Invoice.quotation_id == quotation_id).first()
+        if existing:
+            raise ValueError(f"Invoice already exists for this quotation:{existing.id}")
 
         invoice_number = self.get_next_invoice_number(db)
         
@@ -130,5 +135,57 @@ class CRUDInvoice(CRUDBase[Invoice, InvoiceCreate, InvoiceUpdate]):
         db.commit()
         db.refresh(invoice)
         return invoice
+
+    def add_payment(self, db: Session, invoice_id: int, payment_in: "InvoicePaymentCreate") -> "InvoicePayment":
+        from app.models.invoice import InvoicePayment
+        
+        invoice = self.get(db, id=invoice_id)
+        if not invoice:
+            raise ValueError("Invoice not found")
+            
+        payment = InvoicePayment(
+            invoice_id=invoice_id,
+            amount=payment_in.amount,
+            payment_method=payment_in.payment_method,
+            reference_number=payment_in.reference_number,
+            notes=payment_in.notes
+        )
+        db.add(payment)
+        
+        # Update invoice amounts
+        invoice.amount_paid += payment_in.amount
+        invoice.balance_due = invoice.grand_total - invoice.amount_paid
+        
+        # Auto update status if fully paid
+        if invoice.balance_due <= 0:
+            invoice.status = InvoiceStatus.PAID
+            
+        db.commit()
+        db.refresh(payment)
+        return payment
+
+    def delete_payment(self, db: Session, invoice_id: int, payment_id: int):
+        from app.models.invoice import InvoicePayment
+        
+        payment = db.query(InvoicePayment).filter(
+            InvoicePayment.id == payment_id,
+            InvoicePayment.invoice_id == invoice_id
+        ).first()
+        
+        if not payment:
+            raise ValueError("Payment not found")
+            
+        invoice = self.get(db, id=invoice_id)
+        if invoice:
+            invoice.amount_paid -= payment.amount
+            invoice.balance_due = invoice.grand_total - invoice.amount_paid
+            
+            # Revert status if we were Paid but now we have balance
+            if invoice.balance_due > 0 and invoice.status == InvoiceStatus.PAID:
+                invoice.status = InvoiceStatus.SENT # or another appropriate status
+                
+        db.delete(payment)
+        db.commit()
+        return True
 
 invoice = CRUDInvoice(Invoice)

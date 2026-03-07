@@ -42,6 +42,7 @@ class Invoice(Base):
     customer = relationship("Customer", backref="invoices")
     quotation = relationship("Quotation", backref="invoices")
     line_items = relationship("InvoiceItem", back_populates="invoice", cascade="all, delete-orphan")
+    payments = relationship("InvoicePayment", back_populates="invoice", cascade="all, delete-orphan")
 
 
 class InvoiceItem(Base):
@@ -58,3 +59,15 @@ class InvoiceItem(Base):
     
     invoice = relationship("Invoice", back_populates="line_items")
     product = relationship("Product")
+
+class InvoicePayment(Base):
+    id = Column(Integer, primary_key=True, index=True)
+    invoice_id = Column(Integer, ForeignKey("invoice.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    payment_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    payment_method = Column(String(50), nullable=True) # e.g. "Cash", "Bank Transfer", etc.
+    reference_number = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    invoice = relationship("Invoice", back_populates="payments")
