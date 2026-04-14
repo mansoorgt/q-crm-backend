@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, model_validator
 # Contact Person Schemas
 class ContactPersonBase(BaseModel):
     name: str
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     phone: Optional[str] = None
     role: Optional[str] = None
 
