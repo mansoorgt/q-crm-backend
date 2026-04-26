@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ invoice.invoice_number or "Invoice" }}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            /* size: A4; */
+            margin: 15mm 15mm 50mm 15mm;
+            @bottom-center {
+                content: element(footer);
+                vertical-align: bottom;
+            }
+        }
+
+        html, body {
+            margin: -20px;
+            padding: 0px;
+        }
+
+        body {
+            font-family: sans-serif;
+            color: #111827;
+            font-size: 14px;
+         
+        }
+
+        /* Footer: stays together, never breaks across pages */
+        #print-footer {
+      
+            /* page-break-inside: avoid;
+            break-inside:      avoid; */
+            position: running(footer);
+            margin: -35px;
+        }
+
+        /* ── Brand colors ── */
+        .primary-bg   { background-color: {{ settings.primary_color if settings.primary_color else '#000000' }}; }
+        .primary-text { color:            {{ settings.primary_color if settings.primary_color else '#000000' }}; }
+        .primary-border { border-color:   {{ settings.primary_color if settings.primary_color else '#000000' }}; }
+        .secondary-text { color:          {{ settings.secondary_color if settings.secondary_color else '#ffffff' }}; }
+
+        /* ── Layout utils ── */
+        .flex              { display: flex; }
+        .justify-between   { justify-content: space-between; }
+        .items-center      { align-items: center; }
+        .items-end         { align-items: flex-end; }
+        .justify-end       { justify-content: flex-end; }
+        .justify-center    { justify-content: center; }
+
+        .text-right  { text-align: right; }
+        .text-center { text-align: center; }
+        .text-left   { text-align: left; }
+
+        .font-bold     { font-weight: bold; }
+        .font-semibold { font-weight: 600; }
+        .uppercase     { text-transform: uppercase; }
+        .tracking-wider { letter-spacing: 0.05em; }
+
+        .text-xs { font-size: 12px; }
+        .text-sm { font-size: 13px; }
+        .text-lg { font-size: 18px; }
+        .text-xl { font-size: 20px; }
+
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        .text-blue-600 { color: #2563eb; }
+        .text-red-600  { color: #dc2626; }
+
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-white    { background-color: #ffffff; }
+
+        .mb-2  { margin-bottom: 8px; }
+        .mb-4  { margin-bottom: 16px; }
+        .mb-8  { margin-bottom: 32px; }
+        .mb-12 { margin-bottom: 48px; }
+        .mt-1  { margin-top: 4px; }
+        .mt-2  { margin-top: 8px; }
+        .mt-8  { margin-top: 32px; }
+
+        .p-2  { padding: 8px; }
+        .py-2 { padding-top: 8px;  padding-bottom: 8px; }
+        .px-4 { padding-left: 16px; padding-right: 16px; }
+        .px-10{ padding-left: 40px; padding-right: 40px; }
+        .py-3 { padding-top: 12px; padding-bottom: 12px; }
+        .py-4 { padding-top: 16px; padding-bottom: 16px; }
+        .pl-2 { padding-left: 8px; }
+        .pr-2 { padding-right: 8px; }
+        .pr-4 { padding-right: 16px; }
+        .pt-2 { padding-top: 8px; }
+        .pt-4 { padding-top: 16px; }
+
+        .w-full { width: 100%; }
+        .w-fit  { width: fit-content; }
+        .h-16   { height: 64px; }
+        .w-40   { width: 160px; }
+        .w-80   { width: 320px; }
+        .h-0-5  { height: 2px; }
+
+        .border-t-2 { border-top: 2px solid; }
+        .border-t   { border-top: 1px solid #e5e7eb; }
+        .border-b   { border-bottom: 1px solid #d1d5db; }
+        .border-b-2 { border-bottom: 2px solid #f3f4f6; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { vertical-align: top; }
+
+        .mr-2 { margin-right: 8px; }
+        .mr-1 { margin-right: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header: Logo and Company Info -->
+        <div class="mb-4">
+            <div style="display: table; width: 100%;">
+                <div style="display: table-cell; vertical-align: middle;">
+                    {% if logo_url %}
+                    <img src="{{ logo_url }}" alt="Company Logo" class="h-16 mb-4" style="object-fit: contain;">
+                    {% endif %}
+                </div>
+                <div style="display: table-cell; vertical-align: middle; text-align: right;">
+                    <p class="text-gray-600 mb-2">
+                        <span class="primary-text">&#9742;</span> {{ settings.phone if settings.phone else '' }}
+                    </p>
+                    <p class="text-gray-600">
+                        <span class="primary-text">&#9993;</span> {{ settings.email if settings.email else '' }}
+                    </p>
+                </div>
+            </div>
+
+            <div style="width: 100%; overflow: hidden;">
+     <div class="w-full primary-bg pt-2 px-10" style="height: 30px;">
+                <h1 class="text-xl font-bold uppercase tracking-wider bg-white w-fit px-4 py-2 secondary-text m-0"
+                    style="display: inline-block; margin-top: -8px;">
+                    INVOICE
+                </h1>
+            </div>
+            </div>
+            <!-- Top Colored Line -->
+       
+        </div>
+
+        <!-- Layout Grid: Customer Left, Invoice Details Right -->
+        <div class="mb-8" style="display: flex; width: 100%; justify-content: space-between;">
+            <!-- Left: Customer -->
+            <div style="display: flex; flex-direction: column;" class="text-xs">
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">Bill To</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span class="font-bold">{{ invoice.customer.name if invoice.customer else '' }}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block; vertical-align: top;">Address</span>
+                    <span class="font-bold mr-2" style="vertical-align: top;">:</span>
+                    <span style="display: inline-block;">{{ invoice.customer.address if invoice.customer and invoice.customer.address else '-' }}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">Phone</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span>{{ invoice.customer.phone if invoice.customer and invoice.customer.phone else '-' }}</span>
+                </div>
+                {% if invoice.customer and invoice.customer.email %}
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">E-Mail</span>
+                    <span class="font-bold mr-2">:</span>
+                    <a href="mailto:{{ invoice.customer.email }}" class="text-blue-600" style="text-decoration: underline;">
+                        {{ invoice.customer.email }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Invoice meta -->
+            <div style="display: table-cell;" class="text-xs">
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">Date</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span class="font-bold">{{ date_str }}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">Invoice No</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span class="font-bold">{{ invoice.invoice_number }}</span>
+                </div>
+                {% if due_date_str %}
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">Due Date</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span class="font-bold">{{ due_date_str }}</span>
+                </div>
+                {% endif %}
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">{{ settings.name if settings.name else 'Company' }} TRN</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span class="font-bold">{{ settings.trn if settings.trn else '-' }}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span class="w-40 font-bold" style="display: inline-block;">Currency</span>
+                    <span class="font-bold mr-2">:</span>
+                    <span class="font-bold">AED</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="h-0-5 w-full primary-bg mb-8"></div>
+
+        <!-- Items Table -->
+        <div class="mb-8">
+            <table>
+                <thead class="bg-gray-100 border-b-2">
+                    <tr>
+                        <th class="py-3 font-semibold text-gray-700 text-sm pl-2 text-left" style="width: 40%;">Description</th>
+                        <th class="py-3 font-semibold text-gray-700 text-sm text-center" style="width: 15%;">Availability</th>
+                        <th class="py-3 font-semibold text-gray-700 text-sm text-center" style="width: 10%;">Qty</th>
+                        <th class="py-3 font-semibold text-gray-700 text-sm text-center" style="width: 10%;">Unit Price</th>
+                        <th class="py-3 font-semibold text-gray-700 text-sm text-center" style="width: 10%;">Tax</th>
+                        <th class="py-3 font-semibold text-gray-700 text-sm text-right pr-2" style="width: 15%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for item in invoice.line_items %}
+                    <tr class="border-b">
+                        <td class="py-4 pr-4 pl-2 text-left " style="width: 50%;">
+                            <div class="font-bold text-gray-900 mb-2">
+                                {{ item.product.name if item.product else (item.product_id if item.product_id else "Item") }}
+                            </div>
+                            <div class="text-gray-600 text-sm" style="white-space: pre-line;">
+                                {{ item.description|safe }}
+                            </div>
+                        </td>
+                        <td class="py-4 text-center font-medium">{{ item.stock_availability }}</td>
+                        <td class="py-4 text-center font-medium">{{ item.quantity }}</td>
+                        <td class="py-4 text-center font-medium">{{ "%.2f"|format(item.unit_price) }}</td>
+                        <td class="py-4 text-center font-medium">
+                            {{ "%.2f"|format((item.unit_price * item.quantity) * (item.tax_rate / 100)) }}
+                            <div class="text-xs">({{ item.tax_rate }}%)</div>
+                        </td>
+                        <td class="py-4 text-right font-bold pr-2">
+                            {{ "%.2f"|format((item.unit_price * item.quantity) * (1 + item.tax_rate / 100)) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals Section -->
+        <div style="display: table; width: 100%; margin-bottom: 48px;">
+            <div style="display: table-cell; width: 60%;"></div>
+            <div style="display: table-cell; width: 40%; padding-right: 8px;">
+                <div style="margin-bottom: 8px; display: table; width: 100%;">
+                    <span class="font-bold text-gray-700 text-sm" style="display: table-cell;">Subtotal:</span>
+                    <span class="font-bold text-sm" style="display: table-cell; text-align: right;">{{ "%.2f"|format(invoice.subtotal) }}</span>
+                </div>
+                <div style="margin-bottom: 8px; display: table; width: 100%;">
+                    <span class="font-bold text-gray-600 text-sm" style="display: table-cell;">Tax:</span>
+                    <span class="font-bold text-sm text-gray-600" style="display: table-cell; text-align: right;">{{ "%.2f"|format(invoice.tax_amount or 0) }}</span>
+                </div>
+                {% if (invoice.discount_amount or 0) > 0 %}
+                <div style="margin-bottom: 8px; display: table; width: 100%;">
+                    <span class="font-bold text-gray-700 text-sm" style="display: table-cell;">Discount:</span>
+                    <span class="font-bold text-sm text-red-600" style="display: table-cell; text-align: right;">-{{ "%.2f"|format(invoice.discount_amount) }}</span>
+                </div>
+                {% endif %}
+                {% if (invoice.shipping_amount or 0) > 0 %}
+                <div style="margin-bottom: 8px; display: table; width: 100%;">
+                    <span class="font-bold text-gray-700 text-sm" style="display: table-cell;">Shipping/Customs:</span>
+                    <span class="font-bold text-sm" style="display: table-cell; text-align: right;">{{ "%.2f"|format(invoice.shipping_amount) }}</span>
+                </div>
+                {% endif %}
+                {% if (invoice.bank_charges or 0) > 0 %}
+                <div style="margin-bottom: 8px; display: table; width: 100%;">
+                    <span class="font-bold text-gray-700 text-sm" style="display: table-cell;">Bank Charges:</span>
+                    <span class="font-bold text-sm" style="display: table-cell; text-align: right;">{{ "%.2f"|format(invoice.bank_charges) }}</span>
+                </div>
+                {% endif %}
+                <div class="border-t-2 primary-border pt-2 mt-2" style="display: table; width: 100%;">
+                    <span class="text-lg font-bold" style="display: table-cell;">Total:</span>
+                    <span class="text-lg font-bold" style="display: table-cell; text-align: right;">AED {{ "%.2f"|format(invoice.grand_total) }}</span>
+                </div>
+                <div class="mt-2 text-gray-600" style="display: table; width: 100%;">
+                    <span class="text-sm" style="display: table-cell;">Balance Due:</span>
+                    <span class="text-sm" style="display: table-cell; text-align: right;">AED {{ "%.2f"|format(invoice.balance_due) }}</span>
+                </div>
+            </div>
+        </div>
+
+    <!-- ═══════════════════════════════
+         FOOTER — last page only
+    ════════════════════════════════ -->
+    <div id="print-footer" style="padding-bottom: 50px;">
+        <div class="h-0-5 w-full primary-bg mb-4"></div>
+
+        <div style="display: flex; justify-content: space-between; width: 100%; font-size: 12px; color: #4b5563;">
+            <div style="">
+                {% if settings.invoice_terms_conditions %}
+                    <h4 class="font-bold mb-2 uppercase text-gray-900" style="margin-top: 0;">Terms &amp; Conditions</h4>
+                    <div style="white-space: pre-wrap;">{{ settings.invoice_terms_conditions|safe }}</div>
+                {% endif %}
+            </div>
+            <div style="">
+                <h4 class="font-bold mb-2 uppercase text-gray-900" style="margin-top: 0;">Bank Details</h4>
+                <div style="white-space: pre-wrap;">{{ settings.bank_details|safe if settings.bank_details else '' }}</div>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t text-center text-xs">
+            <div style="white-space: pre-wrap;">{{ settings.address|safe if settings.address else '' }}</div>
+            <p class="mt-1" style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+                {% if settings.phone %}
+                    <span>&#9742; {{ settings.phone }}</span>
+                {% endif %}
+                {% if settings.phone and settings.email %}<span>|</span>{% endif %}
+                {% if settings.email %}
+                    <span>&#9993; {{ settings.email }}</span>
+                {% endif %}
+                {% if (settings.phone or settings.email) and settings.website %}<span>|</span>{% endif %}
+                {% if settings.website %}
+                    <span>&#128279; {{ settings.website }}</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

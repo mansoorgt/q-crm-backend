@@ -1,9 +1,14 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, Body
+import os
+from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, Body, Response
 from sqlalchemy.orm import Session
+from jinja2 import Environment, FileSystemLoader
+import weasyprint
 
 from app.api import deps
 from app.crud import invoice as crud_invoice
+from app.models.company_settings import CompanySettings
 from app.schemas.invoice import Invoice, InvoiceCreate, InvoiceUpdate, InvoicePagination, InvoicePayment, InvoicePaymentCreate
 
 router = APIRouter()
@@ -102,3 +107,52 @@ def delete_payment(
         return {"success": success}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/{id}/pdf")
+def generate_invoice_pdf(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+) -> Any:
+    invoice = crud_invoice.invoice.get(db=db, id=id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+        
+    settings = db.query(CompanySettings).first()
+    
+    template_dir = os.path.join(os.path.dirname(__file__), "../../../templates")
+    env = Environment(loader=FileSystemLoader(template_dir))
+    template = env.get_template("invoice.html")
+    
+    # Format dates
+    date_str = invoice.invoice_date.strftime("%b %d, %Y") if invoice.invoice_date else ""
+    due_date_str = invoice.due_date.strftime("%b %d, %Y") if invoice.due_date else ""
+    
+    # Resolve logo URL
+    logo_url = ""
+    if settings:
+        if settings.full_logo_url:
+            logo_url = settings.full_logo_url
+        elif settings.logo_url:
+            logo_url = settings.logo_url
+            
+        # Weasyprint needs absolute local paths or complete URLs. 
+        # If it's a relative /static/ path, map it to the uploads folder
+        if logo_url.startswith("/static/"):
+            # assuming uploads is at the root of backend
+            logo_path = os.path.join(os.getcwd(), "uploads", logo_url.replace("/static/", ""))
+            if os.path.exists(logo_path):
+                logo_url = "file://" + logo_path
+    
+    html_out = template.render(
+        invoice=invoice,
+        settings=settings,
+        date_str=date_str,
+        due_date_str=due_date_str,
+        logo_url=logo_url
+    )
+    
+    # Generate PDF
+    pdf_bytes = weasyprint.HTML(string=html_out, base_url="").write_pdf()
+    
+    return Response(content=pdf_bytes, media_type="application/pdf")
