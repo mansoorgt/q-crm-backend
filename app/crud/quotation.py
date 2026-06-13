@@ -36,6 +36,7 @@ def create_quotation(db: Session, quotation: QuotationCreate):
         tax_amount=quotation.tax_amount,
         grand_total=quotation.grand_total,
         sales_person_id=quotation.sales_person_id,
+        currency=quotation.currency,
         internal_notes=quotation.internal_notes,
     )
     db.add(db_quotation)

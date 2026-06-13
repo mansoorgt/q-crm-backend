@@ -51,6 +51,7 @@ class QuotationBase(BaseModel):
     sales_person_id: Optional[int] = None
     inquiry_reference: Optional[str] = None
     billing_address: Optional[str] = None
+    currency: Optional[str] = "AED"
     
     subtotal: float
     discount_amount: float
@@ -75,6 +76,7 @@ class QuotationUpdate(BaseModel): # Allowing partial updates
     contact_person_id: Optional[int] = None
     sales_person_id: Optional[int] = None
     billing_address: Optional[str] = None
+    currency: Optional[str] = None
     
     subtotal: Optional[float] = None
     discount_amount: Optional[float] = None

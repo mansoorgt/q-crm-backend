@@ -23,6 +23,7 @@ class Quotation(Base):
     sales_person_id = Column(Integer, ForeignKey("user.id"), nullable=True)
     inquiry_reference = Column(String(255), nullable=True)
     billing_address = Column(Text, nullable=True)
+    currency = Column(String(10), default="AED", nullable=False)
     
     subtotal = Column(Float, default=0.0)
     discount_amount = Column(Float, default=0.0)
