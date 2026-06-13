@@ -54,7 +54,7 @@ class QuotationItem(Base):
     stock_availability = Column(String(50), nullable=True)
     quantity = Column(Float, default=1.0)
     unit_price = Column(Float, default=0.0)
-    tax_rate = Column(Float, default=0.0)
+    tax_rate = Column(Float, default=5.0)
     total = Column(Float, default=0.0)
     
     quotation = relationship("Quotation", back_populates="line_items")

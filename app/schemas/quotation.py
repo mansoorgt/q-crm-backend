@@ -21,7 +21,7 @@ class QuotationItemBase(BaseModel):
     stock_availability: Optional[str] = None
     quantity: float = 1.0
     unit_price: float = 0.0
-    tax_rate: float = 0.0
+    tax_rate: float = 5.0
     total: float = 0.0
 
 class QuotationItemCreate(QuotationItemBase):
